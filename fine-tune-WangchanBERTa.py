@@ -58,26 +58,16 @@ if __name__ == "__main__":
     label_encoder = load_label_encoder(args, dataset)
 
     text_input_col_name = DATASET_METADATA[args.dataset_name]['text_input_col_name']
-
-    if args.tokenizer_type_or_public_model_name not in list(TOKENIZER_CLS.keys()) \
-        and args.tokenizer_type_or_public_model_name not in list(PUBLIC_MODEL.keys()):
-        raise f"The tokenizer type or public model name `{args.tokenizer_type_or_public_model_name}`` is not supported"
-
-    if args.tokenizer_type_or_public_model_name in list(TOKENIZER_CLS.keys()):
-        tokenizer_cls = TOKENIZER_CLS[args.tokenizer_type_or_public_model_name]
+    
+    tokenizer_cls = TOKENIZER_CLS[args.tokenizer_type_or_public_model_name]
 
 
     task = DATASET_METADATA[args.dataset_name]['task']
-    if args.tokenizer_type_or_public_model_name in PUBLIC_MODEL.keys():
-        model, tokenizer, config = init_public_model_tokenizer_for_seq_cls(args.tokenizer_type_or_public_model_name,
-                                                            task=task,
-                                                            num_labels=DATASET_METADATA[args.dataset_name]['num_labels']);
-    else:
-        model, tokenizer, config = init_model_tokenizer_for_seq_cls("airesearch/wangchanberta-base-att-spm-uncased",
-                                                            tokenizer_cls,
-                                                            "airesearch/wangchanberta-base-att-spm-uncased",
-                                                            task=task,
-                                                            num_labels=DATASET_METADATA[args.dataset_name]['num_labels']);
+    model, tokenizer, config = init_model_tokenizer_for_seq_cls("airesearch/wangchanberta-base-att-spm-uncased",
+                                                        tokenizer_cls,
+                                                        "airesearch/wangchanberta-base-att-spm-uncased",
+                                                        task=task,
+                                                        num_labels=DATASET_METADATA[args.dataset_name]['num_labels']);
     if args.tokenizer_type_or_public_model_name == 'spm_camembert':
         tokenizer.additional_special_tokens = ['<s>NOTUSED', '</s>NOTUSED', args.space_token]
 
