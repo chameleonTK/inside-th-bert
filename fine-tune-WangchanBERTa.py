@@ -38,9 +38,11 @@ from transformers import (
     default_data_collator
 )
 
+import scipy
+
 if __name__ == "__main__":
     
-    args = parser.parse_args("spm wisesight_sentiment ./output/ ./log/".split())
+    args = parser.parse_args("spm_camembert wisesight_sentiment ./output/ ./log/ --batch_size 8".split())
     # Set seed
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
@@ -133,7 +135,7 @@ if __name__ == "__main__":
     print('\n')
 
     print('\nBegin model finetuning.')
-    # trainer.train()
+    trainer.train()
     print('Done.\n')
 
     print('[INDO] Begin saving best checkpoint.')
@@ -143,9 +145,22 @@ if __name__ == "__main__":
 
     print('\nBegin model evaluation on test set.')
 
-    _, label_ids, result = trainer.predict(test_dataset=dataset_split['test'])
+    p, label_ids, result = trainer.predict(test_dataset=dataset_split['test'])
 
     print(f'Evaluation on test set (dataset: {args.dataset_name})')    
 
     for key, value in result.items():
         print(f'{key} : {value:.4f}')
+
+    pred = scipy.special.softmax(p, axis=1)
+    pred = np.argmax(pred, axis=1)
+
+    darr = []
+    for idx, d in enumerate(dataset["test"]):
+      d["prediction"] = pred[idx]
+      darr.append(d)
+
+    df = pd.DataFrame(darr)
+    model_name = args.tokenizer_type_or_public_model_name
+    df.to_csv(f"{model_name}.csv", index=False)
+
